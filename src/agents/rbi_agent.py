@@ -205,6 +205,7 @@ def get_model_id(model):
     return "DR" if model == "deepseek-reasoner" else "DC"
 
 import os
+from dotenv import load_dotenv
 import time
 import re
 from datetime import datetime
@@ -218,6 +219,9 @@ from termcolor import cprint
 import threading
 import itertools
 import sys
+
+# Load environment variables
+load_dotenv()
 
 # DeepSeek Configuration
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
@@ -392,7 +396,7 @@ def research_strategy(content):
         
         # Save research output
         filepath = RESEARCH_DIR / f"{strategy_name}_strategy.txt"
-        with open(filepath, 'w') as f:
+        with open(filepath, 'w', encoding='utf-8') as f:
             f.write(output)
         cprint(f"📝 Research Agent found something spicy! Saved to {filepath} 🌶️", "green")
         cprint(f"🏷️ Generated strategy name: {strategy_name}", "yellow")
@@ -414,7 +418,7 @@ def create_backtest(strategy, strategy_name="UnknownStrategy"):
     
     if output:
         filepath = BACKTEST_DIR / f"{strategy_name}_BT.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, 'w', encoding='utf-8') as f:
             f.write(output)
         cprint(f"🔥 Backtest Agent cooked up some heat! Saved to {filepath} 🚀", "green")
         return output
@@ -444,7 +448,7 @@ def debug_backtest(backtest_code, strategy=None, strategy_name="UnknownStrategy"
             
         # Save to final directory with strategy name
         filepath = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, 'w', encoding='utf-8') as f:
             f.write(output)
         cprint(f"🔧 Debug Agent fixed the code! Saved to {filepath} ✨", "green")
         return output
@@ -470,7 +474,7 @@ def package_check(backtest_code, strategy_name="UnknownStrategy"):
             
         # Save to package directory
         filepath = PACKAGE_DIR / f"{strategy_name}_PKG.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, 'w', encoding='utf-8') as f:
             f.write(output)
         cprint(f"📦 Package Agent optimized the imports! Saved to {filepath} ✨", "green")
         return output
@@ -540,7 +544,7 @@ def process_trading_idea(idea: str) -> None:
         
         # Save research output
         research_file = RESEARCH_DIR / f"{strategy_name}_strategy.txt"
-        with open(research_file, 'w') as f:
+        with open(research_file, 'w', encoding='utf-8') as f:
             f.write(strategy)
             
         # Phase 2: Backtest using only the research output
@@ -553,7 +557,7 @@ def process_trading_idea(idea: str) -> None:
             
         # Save backtest output
         backtest_file = BACKTEST_DIR / f"{strategy_name}_BT.py"
-        with open(backtest_file, 'w') as f:
+        with open(backtest_file, 'w', encoding='utf-8') as f:
             f.write(backtest)
             
         # Phase 3: Package Check using only the backtest code
@@ -566,7 +570,7 @@ def process_trading_idea(idea: str) -> None:
             
         # Save package check output
         package_file = PACKAGE_DIR / f"{strategy_name}_PKG.py"
-        with open(package_file, 'w') as f:
+        with open(package_file, 'w', encoding='utf-8') as f:
             f.write(package_checked)
             
         # Phase 4: Debug using only the package-checked code
@@ -579,7 +583,7 @@ def process_trading_idea(idea: str) -> None:
             
         # Save final backtest
         final_file = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal.py"
-        with open(final_file, 'w') as f:
+        with open(final_file, 'w', encoding='utf-8') as f:
             f.write(final_backtest)
             
         print("\n🎉 Mission Accomplished!")
