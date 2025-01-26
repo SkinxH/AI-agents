@@ -111,6 +111,12 @@ class SentimentAgent:
         cprint("🤖 Loading sentiment model...", "cyan")
         self.init_sentiment_model()
             
+        # Add a set to track tweet IDs in memory
+        self.processed_tweet_ids = set()
+        
+        # Common ticker prefixes
+        self.ticker_prefixes = ['$', '#']
+        
         cprint("🌙 Moon Dev's Sentiment Agent initialized!", "green")
         
     def init_sentiment_model(self):
@@ -330,6 +336,20 @@ class SentimentAgent:
                 cprint("🔄 Please run twitter_login.py again", "yellow")
             sys.exit(1)
 
+    def has_multiple_tickers(self, text):
+        """Check if text contains multiple ticker symbols"""
+        ticker_count = 0
+        # Split text into words
+        words = text.lower().split()
+        
+        for word in words:
+            # Check if word starts with $ or # and has letters after
+            if any(word.startswith(prefix) and len(word) > 1 for prefix in self.ticker_prefixes):
+                ticker_count += 1
+                if ticker_count > 1:
+                    return True
+        return False
+
     async def get_tweets(self, query):
         """Get tweets with proper error handling"""
         collected_tweets = []
@@ -348,9 +368,14 @@ class SentimentAgent:
                 for tweet in tweets:
                     if len(collected_tweets) >= TWEETS_PER_RUN:
                         break
-                    if not any(word.lower() in tweet.text.lower() for word in IGNORE_LIST):
-                        collected_tweets.append(tweet)
-                        cprint(f"📝 Found tweet: {tweet.text[:100]}...", "cyan")
+                    # Check if tweet ID is already processed and doesn't have multiple tickers
+                    if (hasattr(tweet, 'id') and 
+                        str(tweet.id) not in self.processed_tweet_ids and 
+                        not self.has_multiple_tickers(tweet.text)):
+                        if not any(word.lower() in tweet.text.lower() for word in IGNORE_LIST):
+                            collected_tweets.append(tweet)
+                            self.processed_tweet_ids.add(str(tweet.id))
+                            cprint(f"📝 Found tweet: {tweet.text[:100]}...", "cyan")
 
                 # Try to get more tweets if we need them
                 try:
@@ -364,9 +389,14 @@ class SentimentAgent:
                         for tweet in more_tweets:
                             if len(collected_tweets) >= TWEETS_PER_RUN:
                                 break
-                            if not any(word.lower() in tweet.text.lower() for word in IGNORE_LIST):
-                                collected_tweets.append(tweet)
-                                cprint(f"📝 Found tweet: {tweet.text[:100]}...", "cyan")
+                            # Check if tweet ID is already processed and doesn't have multiple tickers
+                            if (hasattr(tweet, 'id') and 
+                                str(tweet.id) not in self.processed_tweet_ids and 
+                                not self.has_multiple_tickers(tweet.text)):
+                                if not any(word.lower() in tweet.text.lower() for word in IGNORE_LIST):
+                                    collected_tweets.append(tweet)
+                                    self.processed_tweet_ids.add(str(tweet.id))
+                                    cprint(f"📝 Found tweet: {tweet.text[:100]}...", "cyan")
                 except AttributeError:
                     # If pagination is not supported, just continue with what we have
                     cprint("📊 Got initial batch of tweets", "cyan")
@@ -490,6 +520,8 @@ class SentimentAgent:
 
     def run(self):
         """Main function to run sentiment analysis"""
+        # Clear the processed tweet IDs at the start of each run
+        self.processed_tweet_ids.clear()
         asyncio.run(self.run_async())
 
 if __name__ == "__main__":
